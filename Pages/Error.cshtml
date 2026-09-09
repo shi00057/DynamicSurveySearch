@@ -1,0 +1,14 @@
+@page
+@model ErrorModel
+@{
+    ViewData["Title"] = "Error";
+}
+
+<section class="panel">
+    <h1>Something went wrong</h1>
+    <p>Check the application log and confirm that the SQL Server connection string is valid.</p>
+    @if (!string.IsNullOrWhiteSpace(Model.RequestId))
+    {
+        <p><strong>Request ID:</strong> <code>@Model.RequestId</code></p>
+    }
+</section>

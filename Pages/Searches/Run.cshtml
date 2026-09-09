@@ -1,0 +1,144 @@
+@page "{searchDefinitionId:int}"
+@model DynamicSurveySearch.Pages.Searches.RunModel
+@{
+    ViewData["Title"] = "Search survey results";
+}
+
+<section class="panel">
+    <p class="eyebrow">Generated search panel</p>
+    <h1>@Model.Definition.Name</h1>
+    <p class="muted">
+        @Model.Definition.SurveyFormVersion.SurveyForm.Name · Version @Model.Definition.SurveyFormVersion.VersionNumber
+    </p>
+
+    <form method="post">
+        <div asp-validation-summary="ModelOnly"></div>
+        <div class="search-grid">
+        @foreach (SearchFieldDefinition field in Model.Definition.Fields)
+        {
+            QuestionDefinition question = field.QuestionDefinition;
+            string key = $"f_{question.QuestionDefinitionId}";
+            string fromKey = $"{key}_from";
+            string toKey = $"{key}_to";
+            <div class="field search-field">
+                <label>@field.DisplayLabel</label>
+                <span class="help">@SearchOperatorRules.GetLabel(field.DefaultOperator)</span>
+
+                @switch (question.QuestionType)
+                {
+                    case QuestionType.ShortText:
+                    case QuestionType.LongText:
+                        <input type="text" name="@key" value="@Model.GetFirst(key)" />
+                        break;
+
+                    case QuestionType.SingleChoice:
+                        <select name="@key">
+                            <option value="">Any</option>
+                            @foreach (QuestionOption option in question.Options)
+                            {
+                                <option value="@option.QuestionOptionId"
+                                        selected="@(Model.IsSelected(key, option.QuestionOptionId.ToString()) ? "selected" : null)">
+                                    @option.OptionText
+                                </option>
+                            }
+                        </select>
+                        break;
+
+                    case QuestionType.MultipleChoice:
+                        <div class="choice-list compact">
+                            @foreach (QuestionOption option in question.Options)
+                            {
+                                <label class="choice">
+                                    <input type="checkbox" name="@key" value="@option.QuestionOptionId"
+                                           checked="@(Model.IsSelected(key, option.QuestionOptionId.ToString()) ? "checked" : null)" />
+                                    @option.OptionText
+                                </label>
+                            }
+                        </div>
+                        break;
+
+                    case QuestionType.Boolean:
+                        <select name="@key">
+                            <option value="">Any</option>
+                            <option value="true" selected="@(Model.IsSelected(key, "true") ? "selected" : null)">Yes</option>
+                            <option value="false" selected="@(Model.IsSelected(key, "false") ? "selected" : null)">No</option>
+                        </select>
+                        break;
+
+                    case QuestionType.Date:
+                        @if (field.DefaultOperator == SearchOperator.Between)
+                        {
+                            <div class="range-inputs">
+                                <input type="date" name="@fromKey" value="@Model.GetFirst(fromKey)" aria-label="From date" />
+                                <span>to</span>
+                                <input type="date" name="@toKey" value="@Model.GetFirst(toKey)" aria-label="To date" />
+                            </div>
+                        }
+                        else if (field.DefaultOperator == SearchOperator.LessThanOrEqual)
+                        {
+                            <input type="date" name="@toKey" value="@Model.GetFirst(toKey)" />
+                        }
+                        else
+                        {
+                            <input type="date" name="@fromKey" value="@Model.GetFirst(fromKey)" />
+                        }
+                        break;
+
+                    case QuestionType.Number:
+                        @if (field.DefaultOperator == SearchOperator.Between)
+                        {
+                            <div class="range-inputs">
+                                <input type="number" step="any" name="@fromKey" value="@Model.GetFirst(fromKey)" aria-label="Minimum" />
+                                <span>to</span>
+                                <input type="number" step="any" name="@toKey" value="@Model.GetFirst(toKey)" aria-label="Maximum" />
+                            </div>
+                        }
+                        else if (field.DefaultOperator == SearchOperator.LessThanOrEqual)
+                        {
+                            <input type="number" step="any" name="@toKey" value="@Model.GetFirst(toKey)" />
+                        }
+                        else
+                        {
+                            <input type="number" step="any" name="@fromKey" value="@Model.GetFirst(fromKey)" />
+                        }
+                        break;
+                }
+            </div>
+        }
+        </div>
+
+        <div class="button-row">
+            <button class="button primary" type="submit">Search</button>
+            <a class="button" asp-page="Run" asp-route-searchDefinitionId="@Model.Definition.SearchDefinitionId">Clear</a>
+            <a class="button" asp-page="/Forms/Index">Forms</a>
+        </div>
+    </form>
+</section>
+
+@if (Model.HasSearched && Model.Results is not null)
+{
+    <section class="panel">
+        <h2>Results <span class="muted">(@Model.Results.TotalCount)</span></h2>
+        @if (Model.Results.Rows.Count == 0)
+        {
+            <p>No submissions matched all supplied criteria.</p>
+        }
+        else
+        {
+            <table>
+                <thead><tr><th>Reference</th><th>Submitted</th><th>Submitted by</th><th></th></tr></thead>
+                <tbody>
+                @foreach (SurveySearchResultRow row in Model.Results.Rows)
+                {
+                    <tr>
+                        <td><code>@row.PublicId</code></td>
+                        <td>@row.SubmittedAtUtc.ToString("yyyy-MM-dd HH:mm") UTC</td>
+                        <td>@(row.SubmittedBy ?? "Anonymous")</td>
+                        <td><a asp-page="/Results/Details" asp-route-id="@row.SurveyResultId">Open</a></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+    </section>
+}

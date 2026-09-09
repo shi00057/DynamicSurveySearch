@@ -1,0 +1,33 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home";
+}
+
+<section class="hero">
+    <p class="eyebrow">Metadata-driven starter</p>
+    <h1>Build a form once. Generate its search panel from the same definition.</h1>
+    <p>
+        Create a versioned survey, add typed questions and options, publish it, collect results,
+        and create a search definition for ordinary users.
+    </p>
+    <div class="button-row">
+        <a class="button primary" asp-page="/Forms/Create">Create a form</a>
+        <a class="button" asp-page="/Forms/Index">View forms</a>
+    </div>
+</section>
+
+<section class="card-grid">
+    <article class="card">
+        <h2>1. Design</h2>
+        <p>Create questions and choice options without changing the database schema.</p>
+    </article>
+    <article class="card">
+        <h2>2. Publish</h2>
+        <p>Published versions are immutable and remain attached to their submitted results.</p>
+    </article>
+    <article class="card">
+        <h2>3. Search</h2>
+        <p>Select questions from the published form and let the system generate the controls.</p>
+    </article>
+</section>

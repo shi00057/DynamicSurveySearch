@@ -1,0 +1,47 @@
+@page
+@model DynamicSurveySearch.Pages.Forms.CreateModel
+@{
+    ViewData["Title"] = "Create form";
+}
+
+<section class="panel">
+    <h1>Create a survey form</h1>
+    <p class="muted">This creates the logical form and its first draft version.</p>
+
+    <form method="post">
+        <div asp-validation-summary="ModelOnly"></div>
+        <div class="form-grid">
+            <div class="field">
+                <label asp-for="Input.FormTypeId">Existing form type</label>
+                <select asp-for="Input.FormTypeId" asp-items="Model.FormTypes">
+                    <option value="">Select a type</option>
+                </select>
+                <span asp-validation-for="Input.FormTypeId"></span>
+            </div>
+            <div class="field">
+                <label asp-for="Input.NewFormTypeName"></label>
+                <input asp-for="Input.NewFormTypeName" />
+                <span class="help">If entered, this takes priority over the existing type.</span>
+            </div>
+            <div class="field">
+                <label asp-for="Input.Code"></label>
+                <input asp-for="Input.Code" placeholder="SAFETY_INSPECTION" />
+                <span asp-validation-for="Input.Code"></span>
+                <span class="help">Stable technical key; spaces are converted to underscores.</span>
+            </div>
+            <div class="field">
+                <label asp-for="Input.Name"></label>
+                <input asp-for="Input.Name" />
+                <span asp-validation-for="Input.Name"></span>
+            </div>
+            <div class="field full">
+                <label asp-for="Input.Description"></label>
+                <textarea asp-for="Input.Description"></textarea>
+            </div>
+        </div>
+        <div class="button-row">
+            <button class="button primary" type="submit">Create draft</button>
+            <a class="button" asp-page="Index">Cancel</a>
+        </div>
+    </form>
+</section>

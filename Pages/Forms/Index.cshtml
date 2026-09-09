@@ -1,0 +1,73 @@
+@page
+@model DynamicSurveySearch.Pages.Forms.IndexModel
+@{
+    ViewData["Title"] = "Forms";
+}
+
+<div class="button-row" style="justify-content: space-between; align-items: center;">
+    <div>
+        <h1 style="margin-bottom: 4px;">Survey forms</h1>
+        <p class="muted" style="margin-top: 0;">Design a form, publish a version, and build its search panel.</p>
+    </div>
+    <a class="button primary" asp-page="Create">Create form</a>
+</div>
+
+<section class="panel">
+    @if (Model.Forms.Count == 0)
+    {
+        <p>No forms have been created.</p>
+    }
+    else
+    {
+        <table>
+            <thead>
+                <tr>
+                    <th>Form</th>
+                    <th>Type</th>
+                    <th>Version</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (SurveyForm form in Model.Forms)
+            {
+                SurveyFormVersion? version = form.Versions
+                    .OrderByDescending(x => x.VersionNumber)
+                    .FirstOrDefault();
+                <tr>
+                    <td>
+                        <strong>@form.Name</strong><br />
+                        <span class="muted"><code>@form.Code</code></span>
+                    </td>
+                    <td>@form.FormType.Name</td>
+                    <td>@(version is null ? "—" : $"v{version.VersionNumber}")</td>
+                    <td>
+                        @if (version is not null)
+                        {
+                            <span class="status @version.Status">@version.Status</span>
+                        }
+                    </td>
+                    <td>
+                        @if (version is not null)
+                        {
+                            <div class="actions">
+                                <a class="button" asp-page="Designer" asp-route-versionId="@version.SurveyFormVersionId">View design</a>
+                                @if (version.Status == FormVersionStatus.Published)
+                                {
+                                    <a class="button" asp-page="Fill" asp-route-versionId="@version.SurveyFormVersionId">Fill form</a>
+                                    <a class="button" asp-page="/Searches/Create" asp-route-versionId="@version.SurveyFormVersionId">Create search</a>
+                                    @foreach (SearchDefinition search in version.SearchDefinitions.Where(x => x.IsActive))
+                                    {
+                                        <a class="button primary" asp-page="/Searches/Run" asp-route-searchDefinitionId="@search.SearchDefinitionId">@search.Name</a>
+                                    }
+                                }
+                            </div>
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+</section>

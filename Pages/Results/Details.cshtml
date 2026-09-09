@@ -1,0 +1,31 @@
+@page "{id:long}"
+@model DynamicSurveySearch.Pages.Results.DetailsModel
+@{
+    ViewData["Title"] = "Survey result";
+}
+
+<section class="panel">
+    <p class="eyebrow">Submitted result</p>
+    <h1>@Model.Result.SurveyFormVersion.SurveyForm.Name</h1>
+    <dl class="metadata">
+        <dt>Reference</dt><dd><code>@Model.Result.PublicId</code></dd>
+        <dt>Submitted</dt><dd>@Model.Result.SubmittedAtUtc.ToString("yyyy-MM-dd HH:mm") UTC</dd>
+        <dt>Submitted by</dt><dd>@(Model.Result.SubmittedBy ?? "Anonymous")</dd>
+    </dl>
+</section>
+
+<section class="panel">
+    <h2>Answers</h2>
+    <table>
+        <thead><tr><th>Question</th><th>Answer</th></tr></thead>
+        <tbody>
+        @foreach (SurveyAnswer answer in Model.Result.Answers)
+        {
+            <tr>
+                <td>@answer.QuestionDefinition.QuestionText</td>
+                <td>@DynamicSurveySearch.Pages.Results.DetailsModel.FormatAnswer(answer)</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</section>

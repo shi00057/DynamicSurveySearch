@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Dynamic Survey Search</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <header class="site-header">
+        <nav class="container nav-bar">
+            <a class="brand" asp-page="/Index">Dynamic Survey Search</a>
+            <div class="nav-links">
+                <a asp-page="/Forms/Index">Forms</a>
+                <a asp-page="/Forms/Create">Create form</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container page-content">
+        @RenderBody()
+    </main>
+
+    <footer class="container site-footer">
+        ASP.NET Core Razor Pages + SQL Server starter project
+    </footer>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

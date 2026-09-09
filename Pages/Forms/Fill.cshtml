@@ -1,0 +1,90 @@
+@page "{versionId:int}"
+@model DynamicSurveySearch.Pages.Forms.FillModel
+@{
+    ViewData["Title"] = "Fill survey";
+}
+
+<section class="panel survey-shell">
+    <p class="eyebrow">@Model.Version.SurveyForm.FormType.Name</p>
+    <h1>@Model.Version.SurveyForm.Name</h1>
+    <p class="muted">Version @Model.Version.VersionNumber</p>
+
+    @if (Model.SubmittedPublicId.HasValue)
+    {
+        <div class="notice">
+            Submission saved. Reference: <code>@Model.SubmittedPublicId</code>
+        </div>
+    }
+
+    <form method="post">
+        <div asp-validation-summary="ModelOnly"></div>
+
+        <div class="field">
+            <label asp-for="SubmittedBy">Submitted by (optional)</label>
+            <input asp-for="SubmittedBy" />
+        </div>
+
+        @foreach (QuestionDefinition question in Model.Version.Questions)
+        {
+            string fieldName = $"q_{question.QuestionDefinitionId}";
+            <fieldset class="survey-question">
+                <legend>
+                    @question.QuestionText
+                    @if (question.IsRequired) { <span class="required">*</span> }
+                </legend>
+                @if (!string.IsNullOrWhiteSpace(question.HelpText))
+                {
+                    <p class="help">@question.HelpText</p>
+                }
+
+                @switch (question.QuestionType)
+                {
+                    case QuestionType.ShortText:
+                        <input type="text" name="@fieldName" maxlength="2000" required="@(question.IsRequired ? "required" : null)" />
+                        break;
+                    case QuestionType.LongText:
+                        <textarea name="@fieldName" maxlength="2000" required="@(question.IsRequired ? "required" : null)"></textarea>
+                        break;
+                    case QuestionType.Date:
+                        <input type="date" name="@fieldName" required="@(question.IsRequired ? "required" : null)" />
+                        break;
+                    case QuestionType.Number:
+                        <input type="number" step="any" name="@fieldName" required="@(question.IsRequired ? "required" : null)" />
+                        break;
+                    case QuestionType.Boolean:
+                        <select name="@fieldName" required="@(question.IsRequired ? "required" : null)">
+                            <option value="">Select</option>
+                            <option value="true">Yes</option>
+                            <option value="false">No</option>
+                        </select>
+                        break;
+                    case QuestionType.SingleChoice:
+                        <select name="@fieldName" required="@(question.IsRequired ? "required" : null)">
+                            <option value="">Select</option>
+                            @foreach (QuestionOption option in question.Options)
+                            {
+                                <option value="@option.QuestionOptionId">@option.OptionText</option>
+                            }
+                        </select>
+                        break;
+                    case QuestionType.MultipleChoice:
+                        <div class="choice-list">
+                            @foreach (QuestionOption option in question.Options)
+                            {
+                                <label class="choice">
+                                    <input type="checkbox" name="@fieldName" value="@option.QuestionOptionId" />
+                                    @option.OptionText
+                                </label>
+                            }
+                        </div>
+                        break;
+                }
+            </fieldset>
+        }
+
+        <div class="button-row">
+            <button class="button primary" type="submit">Submit survey</button>
+            <a class="button" asp-page="Designer" asp-route-versionId="@Model.Version.SurveyFormVersionId">Back</a>
+        </div>
+    </form>
+</section>

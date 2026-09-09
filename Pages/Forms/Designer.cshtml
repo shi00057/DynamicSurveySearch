@@ -1,0 +1,110 @@
+@page "{versionId:int}"
+@model DynamicSurveySearch.Pages.Forms.DesignerModel
+@{
+    ViewData["Title"] = "Form designer";
+}
+
+<div class="button-row" style="justify-content: space-between; align-items: center;">
+    <div>
+        <p class="eyebrow">@Model.Version.SurveyForm.FormType.Name</p>
+        <h1 style="margin: 0;">@Model.Version.SurveyForm.Name — v@Model.Version.VersionNumber</h1>
+    </div>
+    <span class="status @Model.Version.Status">@Model.Version.Status</span>
+</div>
+
+<section class="panel">
+    <h2>Questions</h2>
+    @if (Model.Version.Questions.Count == 0)
+    {
+        <p class="muted">No questions have been added.</p>
+    }
+    else
+    {
+        <table>
+            <thead>
+                <tr><th>Order</th><th>Key</th><th>Question</th><th>Type</th><th>Options</th></tr>
+            </thead>
+            <tbody>
+            @foreach (QuestionDefinition question in Model.Version.Questions)
+            {
+                <tr>
+                    <td>@question.DisplayOrder</td>
+                    <td><code>@question.QuestionKey</code></td>
+                    <td>
+                        @question.QuestionText
+                        @if (question.IsRequired) { <span class="required">*</span> }
+                    </td>
+                    <td>@question.QuestionType</td>
+                    <td>@string.Join(", ", question.Options.Select(x => x.OptionText))</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+</section>
+
+@if (Model.Version.Status == FormVersionStatus.Draft)
+{
+    <section class="panel">
+        <h2>Add a question</h2>
+        <form method="post" asp-page-handler="AddQuestion" asp-route-versionId="@Model.Version.SurveyFormVersionId">
+            <div asp-validation-summary="ModelOnly"></div>
+            <div class="form-grid">
+                <div class="field">
+                    <label asp-for="NewQuestion.QuestionKey"></label>
+                    <input asp-for="NewQuestion.QuestionKey" placeholder="LOCATION" />
+                    <span asp-validation-for="NewQuestion.QuestionKey"></span>
+                </div>
+                <div class="field">
+                    <label asp-for="NewQuestion.QuestionType"></label>
+                    <select asp-for="NewQuestion.QuestionType" asp-items="Html.GetEnumSelectList<QuestionType>()"></select>
+                </div>
+                <div class="field full">
+                    <label asp-for="NewQuestion.QuestionText"></label>
+                    <input asp-for="NewQuestion.QuestionText" />
+                    <span asp-validation-for="NewQuestion.QuestionText"></span>
+                </div>
+                <div class="field full">
+                    <label asp-for="NewQuestion.HelpText"></label>
+                    <input asp-for="NewQuestion.HelpText" />
+                </div>
+                <div class="field">
+                    <label asp-for="NewQuestion.DisplayOrder"></label>
+                    <input asp-for="NewQuestion.DisplayOrder" type="number" />
+                </div>
+                <div class="field">
+                    <label class="choice">
+                        <input asp-for="NewQuestion.IsRequired" />
+                        Required response
+                    </label>
+                </div>
+                <div class="field full">
+                    <label asp-for="NewQuestion.Options"></label>
+                    <textarea asp-for="NewQuestion.Options" placeholder="STATION_12|Station 12&#10;STATION_18|Station 18"></textarea>
+                    <span asp-validation-for="NewQuestion.Options"></span>
+                    <span class="help">For single- or multiple-choice questions, enter one option per line as VALUE|Display text.</span>
+                </div>
+            </div>
+            <button class="button primary" type="submit">Add question</button>
+        </form>
+    </section>
+
+    <section class="panel">
+        <h2>Publish this version</h2>
+        <p>Publishing makes the question structure immutable so submitted results remain interpretable.</p>
+        <form method="post" asp-page-handler="Publish" asp-route-versionId="@Model.Version.SurveyFormVersionId">
+            <button class="button primary" type="submit">Publish version</button>
+        </form>
+    </section>
+}
+else
+{
+    <section class="panel">
+        <h2>Next actions</h2>
+        <div class="button-row">
+            <a class="button primary" asp-page="Fill" asp-route-versionId="@Model.Version.SurveyFormVersionId">Fill this form</a>
+            <a class="button" asp-page="/Searches/Create" asp-route-versionId="@Model.Version.SurveyFormVersionId">Create a search panel</a>
+            <a class="button" asp-page="Index">Back to forms</a>
+        </div>
+    </section>
+}

@@ -1,0 +1,71 @@
+@page "{versionId:int}"
+@model DynamicSurveySearch.Pages.Searches.CreateModel
+@{
+    ViewData["Title"] = "Create search";
+}
+
+<section class="panel">
+    <p class="eyebrow">Create search from published form</p>
+    <h1>@Model.Version.SurveyForm.Name — v@Model.Version.VersionNumber</h1>
+    <p class="muted">
+        Select existing questions. The system determines the runtime control from each question type
+        and reuses the form's choice options.
+    </p>
+
+    <form method="post">
+        <div asp-validation-summary="ModelOnly"></div>
+        <div class="field">
+            <label asp-for="Input.Name"></label>
+            <input asp-for="Input.Name" />
+            <span asp-validation-for="Input.Name"></span>
+        </div>
+
+        <div class="table-scroll">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Use</th>
+                        <th>Form question</th>
+                        <th>Generated control</th>
+                        <th>Search label</th>
+                        <th>Operator</th>
+                        <th>Order</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @for (int i = 0; i < Model.Input.Fields.Count; i++)
+                {
+                    DynamicSurveySearch.Pages.Searches.CreateModel.SearchFieldInput field = Model.Input.Fields[i];
+                    QuestionDefinition question = Model.Version.Questions.Single(x => x.QuestionDefinitionId == field.QuestionId);
+                    <tr>
+                        <td>
+                            <input asp-for="Input.Fields[i].Include" />
+                            <input asp-for="Input.Fields[i].QuestionId" type="hidden" />
+                        </td>
+                        <td>
+                            <strong>@question.QuestionText</strong><br />
+                            <span class="muted"><code>@question.QuestionKey</code> · @question.QuestionType</span>
+                        </td>
+                        <td>@question.QuestionType</td>
+                        <td><input asp-for="Input.Fields[i].DisplayLabel" /></td>
+                        <td>
+                            <select asp-for="Input.Fields[i].DefaultOperator">
+                                @foreach (SearchOperator searchOperator in Model.AllowedOperators(field.QuestionId))
+                                {
+                                    <option value="@searchOperator">@SearchOperatorRules.GetLabel(searchOperator)</option>
+                                }
+                            </select>
+                        </td>
+                        <td><input asp-for="Input.Fields[i].DisplayOrder" type="number" min="1" /></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="button-row">
+            <button class="button primary" type="submit">Save and open search</button>
+            <a class="button" asp-page="/Forms/Designer" asp-route-versionId="@Model.Version.SurveyFormVersionId">Cancel</a>
+        </div>
+    </form>
+</section>
